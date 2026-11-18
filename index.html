@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hafize Weight-Space Harness Demo</title>
+<style>
+:root { --bg:#0b0d12; --fg:#e8eaf0; --muted:#6b7280; --acc:#22d3ee; --acc2:#a855f7; --card:#11141a; --border:#1f2430; }
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;display:flex;flex-direction:column}
+header{padding:2rem 1.5rem;text-align:center;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(34,211,238,.08),transparent)}
+h1{font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);margin-top:.5rem;font-size:.95rem}
+main{flex:1;padding:1.5rem;max-width:960px;margin:0 auto;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;margin-top:1.5rem}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--acc)}
+.card h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.card h3::before{content:"";width:8px;height:8px;background:var(--acc);border-radius:2px}
+.card p{color:var(--muted);font-size:.9rem;line-height:1.5}
+.code{background:#06080c;border:1px solid var(--border);border-radius:8px;padding:1rem;font-family:ui-monospace,monospace;font-size:.8rem;overflow:auto;max-height:300px;margin-top:1rem;white-space:pre}
+.badge{display:inline-block;font-size:.65rem;padding:.15rem .5rem;border-radius:999px;background:rgba(34,211,238,.15);color:var(--acc);margin-left:.5rem}
+footer{padding:1.5rem;text-align:center;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border)}
+a{color:var(--acc);text-decoration:none}a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<header>
+<h1>Weight-Space Harness <span class="badge">Demo</span></h1>
+<p class="sub">LLM ajanı kendi ağırlıklarını güvenli sandbox'ta düzenlemek için gereken 5 bileşen</p>
+</header>
+<main>
+<div class="grid">
+<div class="card"><h3>1. Tensor Erişim Katmanı</h3><p>Safetensors checkpoint'ten katman bazında tensor okuma/yazma (read_tensors, write_tensors). Şifreli, imzalı delta üretimi.</p></div>
+<div class="card"><h3>2. Forward-Pass Sandbox</h3><p>Budgetlu (max N pass) inference ortamı. run_forward(input, budget) → logits + activation cache. CPU/GPU seçimi.</p></div>
+<div class="card"><h3>3. Eval Harness</h3><p>Standart benchmark paketi: MATH-500, GSM8K, IFEval, BBH. Otomatik skorlama + regresyon tespiti (pre/post diff).</p></div>
+<div class="card"><h3>4. Reviewer Ajanı</h3><p>Düzenlemeyi yapan ajandan bağımsız ikinci ajan: güvenlik, doğruluk, görev uyumu, yan etki analizi. JSON raporu.</p></div>
+<div class="card"><h3>5. İnsan Onay Kapısı</h3><p>Değişen tensor listesi, öncesi/sonrası skor tablosu,Reviewer raporu → tek tıkla onay/red. Audit log (kim, ne zaman, hangi delta).</p></div>
+<div class="card"><h3>Mock Demo (Çalışır)</h3><p>Aşağıdaki butonla mock tensörler üzerinde bir düzenleme simülasyonu çalıştırın. Gerçek ağırlıklara erişim yok; altyapı hazır.</p><button id="runDemo" style="margin-top:.75rem;padding:.5rem 1rem;background:var(--acc);color:#000;border:none;border-radius:6px;font-weight:600;cursor:pointer">Demo Çalıştır</button><pre id="demoOut" class="code" style="display:none"></pre></div>
+</div>
+</main>
+<footer>
+Kod: <a href="https://github.com/umitalgan061-sudo/hafize-weight-space-demo-2" target="_blank">github.com/umitalgan061-sudo/hafize-weight-space-demo-2</a> • Hafize weight-space harness altyapı demonstrasyonu
+</footer>
+<script>
+document.getElementById('runDemo').onclick = async () => {
+  const out = document.getElementById('demoOut');
+  out.style.display = 'block';
+  out.textContent = '>>> Sandbox başlatılıyor...\n';
+  await new Promise(r=>setTimeout(r,300));
+  out.textContent += '>>> Mock checkpoint yüklendi: 32 layer, 4096 dim, 128 head\n';
+  await new Promise(r=>setTimeout(r,300));
+  out.textContent += '>>> Tensor okuma: layer.15.mlp.down_proj.weight (4096, 11008)\n';
+  await new Promise(r=>setTimeout(r,200));
+  out.textContent += '>>> Hipotez: Bu tensor "koşul yapılarını" kodluyor → LoRA-rank-8 delta uygulanıyor\n';
+  await new Promise(r=>setTimeout(r,300));
+  out.textContent += '>>> Forward-pass (budget=3): pre-loss=2.31 → post-loss=2.18\n';
+  await new Promise(r=>setTimeout(r,300));
+  out.textContent += '>>> Eval harness: MATH 42.1% → 44.3% (+2.2pp), GSM8K 78.4% → 79.1%\n';
+  await new Promise(r=>setTimeout(r,200));
+  out.textContent += '>>> Reviewer: "Güvenli, görev uyumu yüksek, regresyon yok" ✅\n';
+  await new Promise(r=>setTimeout(r,200));
+  out.textContent += '>>> İnsan onay kapısı: Diff + rapor hazır → Onayla/Red et\n';
+  out.textContent += '\n✅ Simülasyon tamam. Gerçek API için: read_tensors(), write_tensors(), run_forward(), run_eval()';
+};
+</script>
+</body>
+</html>
